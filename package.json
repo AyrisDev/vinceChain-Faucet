@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ping-pub/faucet.git"
+    "url": "git+https://github.com/AyrisDev/vinceChain-Faucet.git"
   },
   "keywords": [
     "Faucet",
@@ -18,12 +18,12 @@
     "SDK",
     "blockchain"
   ],
-  "author": "Ping",
+  "author": "Ayris.Dev",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ping-pub/faucet/issues"
+    "url": "https://github.com/AyrisDev/vinceChain-Faucet/issues"
   },
-  "homepage": "https://github.com/ping-pub/faucet#readme",
+  "homepage": "https://github.com/AyrisDev/vinceChain-Faucet#readme",
   "dependencies": {
     "@cosmjs/crypto": "^0.29.4",
     "@cosmjs/proto-signing": "^0.29.4",
