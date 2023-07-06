@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Faucet for VinceChain</title>
+    <link
+      rel="icon"
+      href="https://raw.githubusercontent.com/AyrisDev/vinceChainAssets/main/favicon.ico" />
+    <meta name="”robots”" content="index, follow" />
+    <meta
+      name="description"
+      content="VinceChain Faucet Tools - Powered By Ayris.Dev" />
+    <meta />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div class="bg-slate-300 h-screen w-full flex flex-col">
+        <main class="w-full items-center flex flex-col">
+          <div class="text-center">
+            <img
+              id="logo"
+              class="h-[250px] w-full"
+              src="https://raw.githubusercontent.com/AyrisDev/vinceChainAssets/main/logo-white.png"
+              :alt="`${testnet} Faucet`" />
+          </div>
+          <div class="text-center">
+            <p class="my-4 font-bold text-2xl">Welcome to VinceChain Faucet!</p>
+          </div>
+          <div class="md:w-[400px] mt-20">
+            <div class="flex flex-col space-y-2">
+              <input
+                id="address"
+                class="border-2 border-slate-500 w-[500px] bg-slate-200 text-slate-500 rounded-lg p-2 w-full"
+                :placeholder="placeholder"
+                v-model="address"
+                name="address" />
+              <button
+                type="button"
+                class="border-2 hover:border-slate-500 p-2 bg-slate-300 rounded-lg font-bold hover:bg-slate-500 hover:text-blue-300 text-white"
+                @click="requestToken(this)">
+                <span>
+                  <span
+                    id="button-loading"
+                    class=""
+                    style="display: none"
+                    role="status"
+                    aria-hidden="true"></span>
+                </span>
+                <span class="">Request Token</span>
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="message"
+            v-html="message"
+            class="flex w-full items-center justify-center mt-4"></div>
+          <footer
+            class="absolute bg-slate-500 bottom-10 justify-center items-center rounded-lg p-4 text-white font-bold">
+            <p class="mb-1">
+              &copy; 2023 Built By <a href="https://ayris.dev">Ayris.Dev</a>
+            </p>
+          </footer>
+        </main>
+      </div>
+    </div>
+    <script type="module">
+      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+      createApp({
+        data() {
+          return {
+            message: "",
+            testnet: "Ping Testnet",
+            logo: "https://ping.pub/logo.svg",
+            deployer: "",
+            address: "",
+            chain: "",
+            conf: {},
+            balance: {},
+            ethAddr: "0xxxx",
+          };
+        },
+        created() {
+          fetch("/config.json")
+            .then((response) => response.json())
+            .then((data) => {
+              this.conf = data;
+              this.testnet = data.name;
+              this.logo = data.logo;
+              this.chain = data.blockchains[0];
+              // this.placeholder = `Input an address (e.g.: ${data.sample[this.chain]}) to received tokens`
+              this.onChange();
+              if (data.deployer) {
+                this.deployer = `, Hosted By ${data.deployer}`;
+              }
+            });
+        },
+        computed: {
+          placeholder() {
+            if (this.conf.sample) {
+              return `Input an address (e.g.: ${
+                this.conf.sample[this.chain]
+              }) to received tokens`;
+            } else {
+              return "Input a vce address to received tokens";
+            }
+          },
+          faucet() {
+            return this.conf.sample ? this.conf.sample[this.chain] : "";
+          },
+        },
+        methods: {
+          onChange() {
+            this.balance = {}; // reset balance
+            fetch(`/balance/${this.chain}`)
+              .then((r) => r.json())
+              .then((balance) => {
+                this.balance = balance;
+              });
+          },
+          requestToken(obj) {
+            if (this.address) {
+              // button state
+              obj.disabled = true;
+              document.getElementById("button-loading").style.display = "block";
+
+              fetch(`/send/${this.chain}/${this.address}`)
+                .then((response) => response.json())
+                .then((data) => {
+                  // button state
+                  obj.disabled = false;
+                  document.getElementById("button-loading").style.display =
+                    "none";
+                  // show result
+                  this.message = `
+                  <div class="p-4 w-full flex justify-center flex-col items-center ${
+                    data.result.code === 0
+                      ? "bg-[#32a852] text-white"
+                      : "bg-[#99120e] text-white"
+                  } mt-2">
+                      <span class="my-4">${
+                        data.result.code === 0 ? "Token sent" : "Request failed"
+                      }</span>
+                      <span class="text-white my-4">TX: ${JSON.stringify(
+                        data.result.hash,
+                        null,
+                        2
+                      )}</span>
+                      <button type="button" class="rounded p-2 bg-slate-600 text-white my-4" >Close</button>
+                  </div>
+                  `;
+                });
+            } else {
+              this.message =
+                '<span class="text-red flex justify-center items-center">Address is required</span>';
+            }
+          },
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
